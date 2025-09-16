@@ -1,15 +1,29 @@
 steps:
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/bitbay-website:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/bitbay-repo/bitbay-repo:$COMMIT_SHA', '.']
   
-  # Push the image to Google Container Registry
+  # Push the image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/bitbay-website:$COMMIT_SHA']
+    args: ['push', 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/bitbay-repo/bitbay-repo:$COMMIT_SHA']
 
-# Store the image in Google Container Registry
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: gcloud
+    args: 
+      - 'run'
+      - 'services'
+      - 'update'
+      - 'bitbay-repo'
+      - '--image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/bitbay-repo/bitbay-repo:$COMMIT_SHA'
+      - '--region=europe-west1'
+      - '--platform=managed'
+      - '--port=8080'
+      - '--allow-unauthenticated'
+
+# Store the image in Artifact Registry
 images:
-  - 'gcr.io/$PROJECT_ID/bitbay-website:$COMMIT_SHA'
+  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/bitbay-repo/bitbay-repo:$COMMIT_SHA'
 
 # Build options
 options:
