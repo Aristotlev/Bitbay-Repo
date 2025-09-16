@@ -1,0 +1,17 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/bitbay-website:$COMMIT_SHA', '.']
+  
+  # Push the image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/bitbay-website:$COMMIT_SHA']
+
+# Store the image in Google Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/bitbay-website:$COMMIT_SHA'
+
+# Build options
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
