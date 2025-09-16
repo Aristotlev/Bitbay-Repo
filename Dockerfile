@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 
 # Set working directory
 WORKDIR /app
@@ -22,11 +22,14 @@ FROM nginx:alpine
 # Copy built application from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy nginx configuration template
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
 
-# Expose port 80
-EXPOSE 80
+# Install envsubst for environment variable substitution
+RUN apk add --no-cache gettext
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Expose port from environment variable (Cloud Run uses 8080)
+EXPOSE $PORT
+
+# Start nginx with environment variable substitution
+CMD envsubst '${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g "daemon off;"
